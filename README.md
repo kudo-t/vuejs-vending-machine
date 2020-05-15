@@ -1,5 +1,7 @@
 # vuejs-vending-machine
 
+## Vending Machine
+
 ## Project setup
 ```
 npm install
