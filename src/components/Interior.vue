@@ -28,7 +28,7 @@
       <tbody>
         <tr v-for="coin in COIN_TYPES" v-bind:key="coin">
           <td>{{ coin }}</td>
-          <td>{{ inputCoinsInitialized ? stockCoins[coin] : "--"}}</td>
+          <td>{{ stockCoinsInitialized ? stockCoins[coin] : "--"}}</td>
         </tr>
       </tbody>
     </table>
