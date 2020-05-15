@@ -1,4 +1,4 @@
-# vuejs-hello
+# vuejs-vending-machine
 
 ## Project setup
 ```

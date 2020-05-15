@@ -11,9 +11,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="inputCoin in inputCoins" v-bind:key="inputCoin.name">
-          <td>{{ inputCoin.name }}</td>
-          <td>{{ inputCoinsInitialized ? inputCoin.amount : "--"}}</td>
+        <tr v-for="coin in COIN_TYPES" v-bind:key="coin">
+          <td>{{ coin }}</td>
+          <td>{{ inputCoinsInitialized ? inputCoins[coin] : "--"}}</td>
         </tr>
       </tbody>
     </table>
@@ -26,9 +26,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="stockCoin in stockCoins" v-bind:key="stockCoin.name">
-          <td>{{ stockCoin.name }}</td>
-          <td>{{ stockCoinsInitialized ? stockCoin.amount : "--"}}</td>
+        <tr v-for="coin in COIN_TYPES" v-bind:key="coin">
+          <td>{{ coin }}</td>
+          <td>{{ inputCoinsInitialized ? stockCoins[coin] : "--"}}</td>
         </tr>
       </tbody>
     </table>
@@ -41,9 +41,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="product in products" v-bind:key="product.name">
-          <td>{{ product.name }}</td>
-          <td>{{ productsInitialized ? product.amount : "--"}}</td>
+        <tr v-for="product in PRODUCT_TYPES" v-bind:key="product">
+          <td>{{ product }}</td>
+          <td>{{ productsInitialized ? stockProducts[product] : "--"}}</td>
         </tr>
       </tbody>
     </table>
@@ -51,61 +51,41 @@
 </template>
 
 <script>
+import {COIN_TYPES, PRODUCT_TYPES} from '../constants/config.js'
+
 export default {
   name: 'Interior',
   props: {
-    products: Array
+    stockProducts: Array
   },
   data() {
     return {
+      COIN_TYPES: COIN_TYPES,
+      PRODUCT_TYPES: PRODUCT_TYPES,
       inputCoinsInitialized: false,
       stockCoinsInitialized: false,
       productsInitialized: false,
       inputCoins:
-      [
-        {
-          name: "500",
-          amount: 0
-        },
-        {
-          name: "100",
-          amount: 0
-        },
-        {
-          name: "50",
-          amount: 0
-        },
-        {
-          name: "10",
-          amount: 0
-        }
-      ],
+      {
+        "500": 0,
+        "100": 0,
+        "50": 0,
+        "10": 0
+      },
       stockCoins:
-      [
-        {
-          name: "500",
-          amount: 0
-        },
-        {
-          name: "100",
-          amount: 99
-        },
-        {
-          name: "50",
-          amount: 99
-        },
-        {
-          name: "10",
-          amount: 99
-        }
-      ]
+      {
+        "500": 0,
+        "100": 9,
+        "50": 9,
+        "10": 9
+      }
     };
   },
   methods : {
     getAmount(coins) {
       let amount = 0;
-      for (let i in coins) {
-        amount += parseInt(coins[i]["name"], 10) * coins[i]["amount"];
+      for (let i in COIN_TYPES) {
+        amount += parseInt(COIN_TYPES[i], 10) * coins[COIN_TYPES[i]];
       }
       return amount;
     },
@@ -122,10 +102,15 @@ export default {
       return this.getAmount(this.inputCoins);
     },
     isEnoughChange() {
+      let coins = this.stockCoins;
+      
       // 100円以上の硬貨で400円が作れ、
       // 10円以上の硬貨で90円が作れれば、釣り銭充足と判定
       // 100円以上のお釣りを50/10円硬貨で返却させない
-      return true;
+      let isEnoughHundreds = coins["100"] >= 4;
+      let isEnoughTens = coins["10"] >= 9 || (coins["50"] >= 1 && coins["10"] >= 4);
+      
+      return isEnoughHundreds && isEnoughTens;
     }
   }
 }

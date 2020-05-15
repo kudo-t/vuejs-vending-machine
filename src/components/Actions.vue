@@ -19,8 +19,8 @@
     <label for="c6">&nbsp;&nbsp;1円玉&nbsp;</label><br>
     <button @click="insertCoin">投入</button>
     <h3>購入ボタン</h3>
-    <span v-for="stockProduct in stockProducts" v-bind:key="stockProduct.name">
-      <button @click="purchase(stockProduct.name)">{{ stockProduct.name }}</button>
+    <span v-for="product in PRODUCT_TYPES" v-bind:key="product">
+      <button @click="purchase(product)">{{ product }}</button>
     </span>
     <h3>硬貨返却レバー</h3>
     <button @click="returnCoins">押下</button>
@@ -28,11 +28,17 @@
 </template>
 
 <script>
+import {PRODUCT_TYPES} from '../constants/config.js'
+
 export default {
   name: 'Actions',
   props: {
-    coin: {type:String, default:"500"},
-    stockProducts: Array
+    coin: {type:String, default:"500"}
+  },
+  data() {
+    return {
+      PRODUCT_TYPES: PRODUCT_TYPES
+    };
   },
   methods: {
     switchOn() {

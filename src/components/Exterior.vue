@@ -15,11 +15,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="product in products" v-bind:key="product.name">
-          <td>{{ product.name }}</td>
-          <td>{{ product.price + "円"}}</td>
-          <td>{{ getCanBuyLamp(product.canBuyNow) }}</td>
-          <td>{{ getOutOfStockLamp(product.amount) }}</td>
+        <tr v-for="product in PRODUCT_TYPES" v-bind:key="product">
+          <td>{{ product }}</td>
+          <td>{{ PRODUCT_PRICE[product] + "円"}}</td>
+          <td>{{ getCanBuyLamp(canBuyNow[product]) }}</td>
+          <td>{{ getOutOfStockLamp(stockProducts[product])}}</td>
         </tr>
       </tbody>
     </table>
@@ -35,13 +35,18 @@
 </template>
 
 <script>
+import {PRODUCT_TYPES, PRODUCT_PRICE} from '../constants/config.js'
+
 export default {
   name: 'Exterior',
   props: {
-   products: Array
+   stockProducts: Array,
+   canBuyNow: Array
   },
   data(){
     return {
+      PRODUCT_TYPES: PRODUCT_TYPES,
+      PRODUCT_PRICE: PRODUCT_PRICE,
       power: "OFF",
       productsInitialized: false,
       inputAmount:"--",

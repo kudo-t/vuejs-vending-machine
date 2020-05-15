@@ -2,12 +2,13 @@
   <div class="grid-container">
     <div class="grid-item">
       <Exterior ref="exterior" 
-        :products="products"
+        :stockProducts="stockProducts"
+        :canBuyNow="canBuyNow"
       />
     </div>
     <div class="grid-item">
       <Interior ref="interior" 
-        :products="products"
+        :stockProducts="stockProducts"
       />
     </div>
     <div class="grid-item">
@@ -17,7 +18,6 @@
         v-on:purchase-A="purchaseA"
         v-on:purchase-B="purchaseB"
         v-on:return-coins="returnCoins"
-        :stockProducts="products"
       />
     </div>
     <div class="grid-item">
@@ -45,21 +45,16 @@ export default {
     return {
       eventId: 0,
       loading: -1,
-      products:
-      [
-        {
-          name: "A",
-          price: 100,
-          canBuyNow: false,
-          amount: 99
-        },
-        {
-          name: "B",
-          price: 120,
-          canBuyNow: false,
-          amount: 99
-        }
-      ],
+      stockProducts:
+      {
+        "A": 2,
+        "B": 2
+      },
+      canBuyNow:
+      {
+        "A": false,
+        "B": false
+      },
       output:"",
       change:[]
     };
@@ -70,9 +65,7 @@ export default {
     },
     async switchOn() {
       let eventId = ++this.eventId;
-      let isContinue = false;
-      
-      isContinue = this.startFlow(eventId, FLOWCHARTS.SWITCH_ON);
+      let isContinue = this.startFlow(eventId, FLOWCHARTS.SWITCH_ON);
       
       // １．電源スイッチをONにする
       if(isContinue){
@@ -123,26 +116,38 @@ export default {
     },
     insertCoin(coin) {
       let eventId = ++this.eventId;
-      this.startFlow(eventId,FLOWCHARTS.INSERT_COIN + ": " + coin);
+      let isContinue = this.startFlow(eventId,FLOWCHARTS.INSERT_COIN + ": " + coin);
+      
+      if(isContinue){
+        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+      }
       this.endFlow(eventId,FLOWCHARTS.INSERT_COIN + ": " + coin);
     },
     purchaseA() {
       let eventId = ++this.eventId;
-
-      this.startFlow(eventId,FLOWCHARTS.PURCHASE_A);
+      let isContinue = this.startFlow(eventId,FLOWCHARTS.PURCHASE_A);
+      
+      if(isContinue){
+        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+      }
       this.endFlow(eventId,FLOWCHARTS.PURCHASE_A);
     },
     purchaseB() {
       let eventId = ++this.eventId;
-
-      this.startFlow(eventId,FLOWCHARTS.PURCHASE_B);
-      this.endFlow(eventId,FLOWCHARTS.PURCHASE_B);
+      let isContinue = this.startFlow(eventId,FLOWCHARTS.PURCHASE_B);
       
+      if(isContinue){
+        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+      }
+      this.endFlow(eventId,FLOWCHARTS.PURCHASE_B);
     },
     returnCoins() {
       let eventId = ++this.eventId;
-
-      this.startFlow(eventId, FLOWCHARTS.RETURN_COINS);
+      let isContinue = this.startFlow(eventId, FLOWCHARTS.RETURN_COINS);
+      
+      if(isContinue){
+        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+      }
       this.endFlow(eventId, FLOWCHARTS.RETURN_COINS);
     },
     startFlow(eventId, flow_name) {
