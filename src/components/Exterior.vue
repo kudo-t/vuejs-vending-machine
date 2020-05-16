@@ -19,7 +19,7 @@
           <td>{{ product }}</td>
           <td>{{ PRODUCT_PRICE[product] + "円"}}</td>
           <td>{{ getCanBuyLamp(canBuyNow[product]) }}</td>
-          <td>{{ getOutOfStockLamp(stockProducts[product])}}</td>
+          <td>{{ getOutOfStockLamp(outOfStock[product])}}</td>
         </tr>
       </tbody>
     </table>
@@ -39,18 +39,15 @@ import {PRODUCT_TYPES, PRODUCT_PRICE} from '../constants/config.js'
 
 export default {
   name: 'Exterior',
-  props: {
-   stockProducts: Array,
-   canBuyNow: Array
-  },
   data(){
     return {
       PRODUCT_TYPES: PRODUCT_TYPES,
       PRODUCT_PRICE: PRODUCT_PRICE,
       power: "OFF",
-      productsInitialized: false,
       inputAmount:"--",
       outOfChangeLamp:"--",
+      canBuyNow: {},
+      outOfStock: {},
       output: [],
       change: []
     }
@@ -63,14 +60,20 @@ export default {
       }
       return false;
     },
-    initializeProducts() {
-      this.productsInitialized = true;
+    isPowerOn() {
+      return this.power === "ON";
     },
     setInputAmount(inputAmount) {
       this.inputAmount = inputAmount + "円";
     },
     setOutOfChangeLamp(isEnoughChange) {
       this.outOfChangeLamp = isEnoughChange ? "OFF": "ON";
+    },
+    setCanBuyNow(canBuyNow) {
+      this.canBuyNow = canBuyNow;
+    },
+    setOutOfStock(outOfStock) {
+      this.outOfStock = outOfStock;
     },
     setOutput(output) {
       this.output = output;
@@ -80,18 +83,18 @@ export default {
     },
     // 購入可能ランプ
     getCanBuyLamp(canBuyNow){
-      if(!this.productsInitialized) {
+      if(canBuyNow === undefined) {
         return "--";
       } else {
         return canBuyNow ? "ON" : "OFF";
       }
     },
     // 品切れランプ
-    getOutOfStockLamp(amount) {
-      if(!this.productsInitialized) {
+    getOutOfStockLamp(outOfStock) {
+      if(outOfStock === undefined) {
         return "--";
       } else {
-        return amount === 0 ? "ON" : "OFF";
+        return outOfStock ? "ON" : "OFF";
       }
     }
   }

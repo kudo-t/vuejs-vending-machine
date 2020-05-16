@@ -51,17 +51,15 @@
 </template>
 
 <script>
-import {COIN_TYPES, PRODUCT_TYPES} from '../constants/config.js'
+import {COIN_TYPES, PRODUCT_TYPES, PRODUCT_PRICE} from '../constants/config.js'
 
 export default {
   name: 'Interior',
-  props: {
-    stockProducts: Array
-  },
   data() {
     return {
       COIN_TYPES: COIN_TYPES,
       PRODUCT_TYPES: PRODUCT_TYPES,
+      PRODUCT_PRICE: PRODUCT_PRICE,
       inputCoinsInitialized: false,
       stockCoinsInitialized: false,
       productsInitialized: false,
@@ -78,7 +76,12 @@ export default {
         "100": 9,
         "50": 9,
         "10": 9
-      }
+      },
+      stockProducts:
+      {
+        "A": 2,
+        "B": 2
+      },
     };
   },
   methods : {
@@ -101,6 +104,25 @@ export default {
     getInputAmount() {
       return this.getAmount(this.inputCoins);
     },
+    getCanBuyNow() {
+      // 購入可能条件
+      // 在庫有 AND 投入金額 >= 商品金額 AND 投入済み硬貨＋硬貨在庫から釣銭を払い出せる
+      let canBuyNow = {};
+      let inputAmount = this.getInputAmount();
+      for(let p in PRODUCT_TYPES) {
+        canBuyNow[PRODUCT_TYPES[p]] = (this.stockProducts[PRODUCT_TYPES[p]] > 0) && 
+                          (inputAmount >= PRODUCT_PRICE[PRODUCT_TYPES[p]]) && 
+                          (this.hasChangeFor(inputAmount - PRODUCT_PRICE[PRODUCT_TYPES[p]]));
+      }
+      return canBuyNow;
+    },
+    getOutOfStock() {
+      let outOfStock = {};
+      for(let p in PRODUCT_TYPES) {
+        outOfStock[PRODUCT_TYPES[p]] = this.stockProducts[PRODUCT_TYPES[p]] < 1;
+      }
+      return outOfStock;
+    },
     isEnoughChange() {
       let coins = this.stockCoins;
       
@@ -111,6 +133,19 @@ export default {
       let isEnoughTens = coins["10"] >= 9 || (coins["50"] >= 1 && coins["10"] >= 4);
       
       return isEnoughHundreds && isEnoughTens;
+    },
+    hasChangeFor(changeAmount) {
+      for(let c in COIN_TYPES) {
+        let availableCoins = this.inputCoins[COIN_TYPES[c]] + this.stockCoins[COIN_TYPES[c]];
+        let coin = parseInt(COIN_TYPES[c], 10);
+        if(changeAmount >= coin && availableCoins > 0) {
+          changeAmount -= coin * Math.min(availableCoins, Math.floor(changeAmount / coin));
+        }
+        if(changeAmount === 0) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 }

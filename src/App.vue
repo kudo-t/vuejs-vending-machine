@@ -1,15 +1,10 @@
 <template>
   <div class="grid-container">
     <div class="grid-item">
-      <Exterior ref="exterior" 
-        :stockProducts="stockProducts"
-        :canBuyNow="canBuyNow"
-      />
+      <Exterior ref="exterior" />
     </div>
     <div class="grid-item">
-      <Interior ref="interior" 
-        :stockProducts="stockProducts"
-      />
+      <Interior ref="interior" />
     </div>
     <div class="grid-item">
       <Actions
@@ -31,7 +26,7 @@ import Exterior from './components/Exterior.vue'
 import Interior from './components/Interior.vue'
 import Actions from './components/Actions.vue'
 import Logs from './components/Logs.vue'
-import {FLOWCHARTS} from './constants/messages.js'
+import {FLOWCHART_NAME_JP, FLOWCHART_NAME_EN} from './constants/messages.js'
 
 export default {
   name: 'App',
@@ -45,110 +40,107 @@ export default {
     return {
       eventId: 0,
       loading: -1,
-      stockProducts:
-      {
-        "A": 2,
-        "B": 2
-      },
-      canBuyNow:
-      {
-        "A": false,
-        "B": false
-      },
-      output:"",
-      change:[]
+      FLOWCHARTS : {
+        SWITCH_ON: {
+          first: {
+            func: this.powerOn,
+            onSuccess: "initializeInputCoins",
+            onFailure: ""
+          },
+          initializeInputCoins: {
+            func: this.initializeInputCoins,
+            onSuccess: "setInputAmount"
+          },
+          setInputAmount: {
+            func: this.setInputAmount,
+            onSuccess: "initializeStockCoins"
+          },
+          initializeStockCoins: {
+            func: this.initializeStockCoins,
+            onSuccess: "setOutOfChangeLamp"
+          },
+          setOutOfChangeLamp: {
+            func: this.setOutOfChangeLamp,
+            onSuccess: "initializeProducts"
+          },
+          initializeProducts: {
+            func: this.initializeProducts,
+            onSuccess: "setOutOfStockLamp"
+          },
+          setOutOfStockLamp: {
+            func: this.setOutOfStockLamp,
+            onSuccess: "setCanBuyNow"
+          },
+          setCanBuyNow: {
+            func: this.setCanBuyNow,
+            onSuccess: ""
+          }
+        }
+      }
     };
   },
   methods: {
     sleep() {
       return new Promise(resolve => setTimeout(resolve, 1000));
     },
-    async switchOn() {
+    switchOn() {
       let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId, FLOWCHARTS.SWITCH_ON);
+      let isContinue = this.startFlow(eventId, FLOWCHART_NAME_JP.SWITCH_ON);
       
-      // １．電源スイッチをONにする
-      if(isContinue){
-        await this.sleep();
-        if(this.$refs.exterior.powerOn()) {
-          this.$refs.logs.info("[" + eventId + "]" + "電源スイッチをONに切り替えました。");
-        } else {
-          this.$refs.logs.warn("[" + eventId + "]" + "電源スイッチは既にONです。");
-          isContinue = false;
-        }
+      if(isContinue) {
+        isContinue = this.proceedFlow(eventId, FLOWCHART_NAME_EN.SWITCH_ON);
+      } else {
+        this.endFlow(eventId,FLOWCHART_NAME_JP.SWITCH_ON);
       }
-      
-      if(isContinue){
-        // ２．投入済硬貨の初期化
-        await this.sleep();
-        // ２－１．投入済硬貨のスキャン
-        this.$refs.interior.initializeInputCoins();
-        this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨をスキャンしました。");
-        await this.sleep();
-        // ２－２．投入金額を表示
-        let amount = this.$refs.interior.getInputAmount();
-        this.$refs.exterior.setInputAmount(amount);
-        this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。");
-        
-        // ３．硬貨在庫の初期化
-        await this.sleep();
-        // ３－１．硬貨在庫のスキャン
-        this.$refs.interior.initializeStockCoins();
-        this.$refs.logs.info("[" + eventId + "]" + "硬貨在庫をスキャンしました。");
-        await this.sleep();
-        // ３－２．釣り銭切れランプ表示
-        let isEnoughChange = this.$refs.interior.isEnoughChange();
-        this.$refs.exterior.setOutOfChangeLamp(isEnoughChange);
-        this.$refs.logs.info("[" + eventId + "]" + "釣り銭切れランプの表示を更新しました。");
-        
-        // ４．商品在庫の初期化
-        await this.sleep();
-        // ４－１．商品在庫のスキャン
-        this.$refs.interior.initializeProducts();
-        this.$refs.logs.info("[" + eventId + "]" + "商品在庫をスキャンしました。");
-        await this.sleep();
-        // ４－２．購入可能/品切れランプ表示
-        this.$refs.exterior.initializeProducts();
-        this.$refs.logs.info("[" + eventId + "]" + "購入可能/品切れランプの表示を更新しました。");
-      }
-      
-      this.endFlow(eventId,FLOWCHARTS.SWITCH_ON);
     },
     insertCoin(coin) {
       let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId,FLOWCHARTS.INSERT_COIN + ": " + coin);
+      let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.INSERT_COIN + ": " + coin);
       
       if(isContinue){
-        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+        // １．電源スイッチ確認 new
+        
+        
+        // ２．投入物体受付 new
+        
+        // ３．投入済硬貨の更新
+        // ３－１．投入済硬貨の追加 new
+        // ３－２．投入金額を表示 既存
+        
+        
+        // ４．購入可能表示更新 new
+        
+        // ３’．投入物体返却 new
+        
       }
-      this.endFlow(eventId,FLOWCHARTS.INSERT_COIN + ": " + coin);
+      this.endFlow(eventId,FLOWCHART_NAME_JP.INSERT_COIN + ": " + coin);
     },
     purchaseA() {
       let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId,FLOWCHARTS.PURCHASE_A);
+      let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_A);
       
       if(isContinue){
         this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
       }
-      this.endFlow(eventId,FLOWCHARTS.PURCHASE_A);
+      this.endFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_A);
     },
     purchaseB() {
       let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId,FLOWCHARTS.PURCHASE_B);
+      let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_B);
       
       if(isContinue){
         this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
       }
-      this.endFlow(eventId,FLOWCHARTS.PURCHASE_B);
+      this.endFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_B);
     },
     returnCoins() {
       let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId, FLOWCHARTS.RETURN_COINS);
+      let isContinue = this.startFlow(eventId, FLOWCHART_NAME_JP.RETURN_COINS);
       
       if(isContinue){
         this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
       }
-      this.endFlow(eventId, FLOWCHARTS.RETURN_COINS);
+      this.endFlow(eventId, FLOWCHART_NAME_JP.RETURN_COINS);
     },
     startFlow(eventId, flow_name) {
       this.$refs.logs.info("[" + eventId + "]" + flow_name + " 開始");
@@ -159,11 +151,87 @@ export default {
       this.loading = eventId;
       return true;
     },
+    async proceedFlow(eventId, flow_name) {
+      let flow = this.FLOWCHARTS[flow_name];
+      let nextFunction = flow["first"];
+      
+      while(nextFunction) {
+        await this.sleep();
+        if(nextFunction["func"](eventId)) {
+          nextFunction = flow[nextFunction["onSuccess"]];
+        } else {
+          nextFunction = flow[nextFunction["onFailure"]];
+        }
+      }
+      this.endFlow(eventId, FLOWCHART_NAME_JP[flow_name]);
+    },
     endFlow(eventId, flow_name) {
       this.$refs.logs.info("[" + eventId + "]" + flow_name + " 終了");
       if(this.loading === eventId) {
         this.loading = -1;
       }
+    },
+    powerOn(eventId) {
+      if(this.$refs.exterior.powerOn()) {
+        this.$refs.logs.info("[" + eventId + "]" + "電源スイッチをONに切り替えました。");
+        return true;
+      } else {
+        this.$refs.logs.warn("[" + eventId + "]" + "電源スイッチは既にONです。");
+        return false;
+      }
+    },
+    initializeInputCoins(eventId) {
+      // 投入済硬貨のスキャン
+      this.$refs.interior.initializeInputCoins();
+      this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨を初期化しました。");
+      
+      return true;
+    },
+    setInputAmount(eventId) {
+      // 投入金額を表示
+      let amount = this.$refs.interior.getInputAmount();
+      this.$refs.exterior.setInputAmount(amount);
+      this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。");
+      
+      return true;
+    },
+    initializeStockCoins(eventId) {
+      // 硬貨在庫のスキャン
+      this.$refs.interior.initializeStockCoins();
+      this.$refs.logs.info("[" + eventId + "]" + "硬貨在庫をスキャンしました。");
+      
+      return true;
+    },
+    setOutOfChangeLamp(eventId) {
+      // 釣り銭切れランプ表示
+      let isEnoughChange = this.$refs.interior.isEnoughChange();
+      this.$refs.exterior.setOutOfChangeLamp(isEnoughChange);
+      this.$refs.logs.info("[" + eventId + "]" + "釣り銭切れランプの表示を更新しました。");
+      
+      return true;
+    },
+    initializeProducts(eventId) {
+      // 商品在庫のスキャン
+      this.$refs.interior.initializeProducts();
+      this.$refs.logs.info("[" + eventId + "]" + "商品在庫をスキャンしました。");
+
+      return true;
+    },
+    setOutOfStockLamp(eventId) {
+      // 品切れランプ更新
+      let outOfStock = this.$refs.interior.getOutOfStock();
+      this.$refs.exterior.setOutOfStock(outOfStock);
+      this.$refs.logs.info("[" + eventId + "]" + "品切れランプを更新しました。");
+      
+      return true;
+    },
+    setCanBuyNow(eventId) {
+      // 購入可能ランプ更新
+      let canBuyNow = this.$refs.interior.getCanBuyNow();
+      this.$refs.exterior.setCanBuyNow(canBuyNow);
+      this.$refs.logs.info("[" + eventId + "]" + "購入可能ランプを更新しました。");
+      
+      return true;
     }
   },
 
