@@ -46,11 +46,7 @@ export default {
       this.$emit("insert-coin", this.coin);
     },
     purchase(name) {
-      if(name === "A") {
-        this.$emit("purchase-A");
-      } else if(name ==="B") {
-        this.$emit("purchase-B");
-      }
+      this.$emit("purchase", name);
     },
     returnCoins() {
       this.$emit("return-coins");

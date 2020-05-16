@@ -104,17 +104,23 @@ export default {
     getInputAmount() {
       return this.getAmount(this.inputCoins);
     },
+    getPurchasedInputAmount(product) {
+      return this.getInputAmount() - PRODUCT_PRICE[product];
+    },
     getCanBuyNow() {
       // 購入可能条件
       // 在庫有 AND 投入金額 >= 商品金額 AND 投入済み硬貨＋硬貨在庫から釣銭を払い出せる
       let canBuyNow = {};
-      let inputAmount = this.getInputAmount();
       for(let p in PRODUCT_TYPES) {
-        canBuyNow[PRODUCT_TYPES[p]] = (this.stockProducts[PRODUCT_TYPES[p]] > 0) && 
-                          (inputAmount >= PRODUCT_PRICE[PRODUCT_TYPES[p]]) && 
-                          (this.hasChangeFor(inputAmount - PRODUCT_PRICE[PRODUCT_TYPES[p]]));
+        canBuyNow[PRODUCT_TYPES[p]] = this.canBuyProduct(PRODUCT_TYPES[p]);
       }
       return canBuyNow;
+    },
+    canBuyProduct(name) {
+      let inputAmount = this.getInputAmount();
+      return this.stockProducts[name] > 0 && 
+             inputAmount >= PRODUCT_PRICE[name] && 
+             this.hasChangeFor(this.getInputAmount() - PRODUCT_PRICE[name]);
     },
     getOutOfStock() {
       let outOfStock = {};
@@ -128,7 +134,6 @@ export default {
       
       // 100円以上の硬貨で400円が作れ、
       // 10円以上の硬貨で90円が作れれば、釣り銭充足と判定
-      // 100円以上のお釣りを50/10円硬貨で返却させない
       let isEnoughHundreds = coins["100"] >= 4;
       let isEnoughTens = coins["10"] >= 9 || (coins["50"] >= 1 && coins["10"] >= 4);
       
@@ -136,8 +141,14 @@ export default {
     },
     hasChangeFor(changeAmount) {
       for(let c in COIN_TYPES) {
-        let availableCoins = this.inputCoins[COIN_TYPES[c]] + this.stockCoins[COIN_TYPES[c]];
         let coin = parseInt(COIN_TYPES[c], 10);
+        // 100円以上のお釣りを50/10円硬貨で返却させない
+        if(changeAmount >= 100 && coin < 100) {
+          return false;
+        }
+        
+        let availableCoins = this.inputCoins[COIN_TYPES[c]] + this.stockCoins[COIN_TYPES[c]];
+        
         if(changeAmount >= coin && availableCoins > 0) {
           changeAmount -= coin * Math.min(availableCoins, Math.floor(changeAmount / coin));
         }
@@ -162,7 +173,27 @@ export default {
         }
       }
       return "";
-    }
+    },
+    storeInputCoins() {
+      for(let c in COIN_TYPES) {
+        let availableCoins = this.inputCoins[COIN_TYPES[c]] + this.stockCoins[COIN_TYPES[c]];
+        this.stockCoins[COIN_TYPES[c]] = availableCoins;
+        this.inputCoins[COIN_TYPES[c]] = 0;
+      }
+    },
+    serveProduct(product) {
+      this.stockProducts[product] -= 1;
+    },
+    returnChange(amount) {
+      // stockCoinsから、amountの範囲内で一番大きな硬貨を返却します。
+      for(let c in COIN_TYPES) {
+        if(amount >= parseInt(COIN_TYPES[c], 10) && this.stockCoins[COIN_TYPES[c]] > 0) {
+          this.stockCoins[COIN_TYPES[c]] -= 1;
+          return COIN_TYPES[c];
+        }
+      }
+      return "";
+    },
   }
 }
 </script>

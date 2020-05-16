@@ -10,8 +10,7 @@
       <Actions
         v-on:switch-on="switchOn"
         v-on:insert-coin="insertCoin"
-        v-on:purchase-A="purchaseA"
-        v-on:purchase-B="purchaseB"
+        v-on:purchase="purchase"
         v-on:return-coins="returnCoins"
       />
     </div>
@@ -95,6 +94,34 @@ export default {
             onSuccess: ""
           }
         },
+        PURCHASE: {
+          first: {
+            func: this.acceptPurchase,
+            onSuccess: "serveProduct",
+            onFailure: ""
+          },
+          serveProduct: {
+            func: this.serveProduct,
+            onSuccess: "returnChange"
+          },
+          returnChange: {
+            func: this.returnChange,
+            onSuccess: "setCanBuyNow",
+            onFailure: "returnChange"
+          },
+          setCanBuyNow: {
+            func: this.setCanBuyNow,
+            onSuccess: "setOutOfStockLamp"
+          },
+          setOutOfStockLamp: {
+            func: this.setOutOfStockLamp,
+            onSuccess: "setOutOfChangeLamp"
+          },
+          setOutOfChangeLamp: {
+            func: this.setOutOfChangeLamp,
+            onSuccess: ""
+          }
+        },
         RETURN_COINS: {
           first: {
             func: this.returnInputCoin,
@@ -137,23 +164,15 @@ export default {
         this.endFlow(eventId,FLOWCHART_NAME_JP.INSERT_COIN + ": " + coin);
       }
     },
-    purchaseA() {
+    purchase(product) {
       let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_A);
+      let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.PURCHASE + ": " + product);
       
       if(isContinue){
-        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+        isContinue = this.proceedFlow(eventId, FLOWCHART_NAME_EN.PURCHASE, product);
+      } else {
+        this.endFlow(eventId,FLOWCHART_NAME_JP.PURCHASE + ": " + product);
       }
-      this.endFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_A);
-    },
-    purchaseB() {
-      let eventId = ++this.eventId;
-      let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_B);
-      
-      if(isContinue){
-        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
-      }
-      this.endFlow(eventId,FLOWCHART_NAME_JP.PURCHASE_B);
     },
     returnCoins() {
       let eventId = ++this.eventId;
@@ -288,6 +307,56 @@ export default {
         this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨がありません。");
         return true;
       }
+    },
+    acceptPurchase(eventId, product) {
+      if(this.$refs.exterior.isPowerOn()) {
+        if(this.$refs.interior.canBuyProduct(product)) {
+          this.$refs.logs.info("[" + eventId + "]" + "購入できます。");
+          return true;
+        }
+        this.$refs.logs.warn("[" + eventId + "]" + "購入できません。");
+      } else {
+        this.$refs.logs.warn("[" + eventId + "]" + "電源が入っていません。");
+      }
+      return false;
+    },
+    serveProduct(eventId, product) {
+      // 投入金額に、商品金額を引いた値をセット
+      let amount = this.$refs.interior.getPurchasedInputAmount(product);
+      this.$refs.exterior.setInputAmount(amount);
+      this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。");
+      
+      // 投入済硬貨を硬貨在庫へ格納
+      this.$refs.interior.storeInputCoins();
+      this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨を硬貨在庫へ格納しました。");
+      
+      // 商品を排出
+      this.$refs.interior.serveProduct(product);
+      this.$refs.exterior.serveProduct(product);
+      this.$refs.logs.info("[" + eventId + "]" + "商品を排出しました。");
+      
+      return true;
+    },
+    returnChange(eventId) {
+      let amount = this.$refs.exterior.getInputAmount();
+      
+      let coin = this.$refs.interior.returnChange(amount);
+      if(coin) {
+        this.$refs.exterior.returnCoin(coin);
+        
+        amount = amount - parseInt(coin, 10);
+        this.$refs.exterior.setInputAmount(amount);
+        this.$refs.logs.info("[" + eventId + "]" + "釣り銭を排出しました。");
+        
+        if(amount === 0) {
+          this.$refs.logs.info("[" + eventId + "]" + "釣り銭はすべて排出済です。");
+          return true;
+        }
+        return false;
+      } else {
+        this.$refs.logs.error("[" + eventId + "]" + "予期せぬエラーが発生しました。");
+        return true;
+      }
     }
   },
 }
@@ -300,7 +369,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   display:grid;
-  grid-template-columns: auto auto auto auto;
+  grid-template-columns: 322px auto auto auto;
 }
 .grid-item {
   border: 1px solid rgba(0, 0, 0, 0.8);

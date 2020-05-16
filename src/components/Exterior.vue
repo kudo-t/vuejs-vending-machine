@@ -24,7 +24,7 @@
       </tbody>
     </table>
     <h3>投入金額</h3>
-    {{ inputAmount }}
+    {{ inputAmountYen }}
     <h3>釣り銭切れランプ</h3>
     {{ outOfChangeLamp }}
     <h3>商品排出口</h3>
@@ -44,12 +44,17 @@ export default {
       PRODUCT_TYPES: PRODUCT_TYPES,
       PRODUCT_PRICE: PRODUCT_PRICE,
       power: "OFF",
-      inputAmount:"--",
+      inputAmount:"",
       outOfChangeLamp:"--",
       canBuyNow: {},
       outOfStock: {},
       output: [],
       change: []
+    }
+  },
+  computed: {
+    inputAmountYen: function() {
+      return this.inputAmount ? (this.inputAmount + "円") : "--";
     }
   },
   methods: {
@@ -63,8 +68,11 @@ export default {
     isPowerOn() {
       return this.power === "ON";
     },
+    getInputAmount() {
+      return parseInt(this.inputAmount, 10);
+    },
     setInputAmount(inputAmount) {
-      this.inputAmount = inputAmount + "円";
+      this.inputAmount = inputAmount.toString();
     },
     setOutOfChangeLamp(isEnoughChange) {
       this.outOfChangeLamp = isEnoughChange ? "OFF": "ON";
@@ -99,6 +107,9 @@ export default {
     },
     returnCoin(coin) {
       this.change.push(coin);
+    },
+    serveProduct(product) {
+      this.output.push(product);
     }
   }
 }
