@@ -40,7 +40,7 @@ export default {
     return {
       eventId: 0,
       loading: -1,
-      FLOWCHARTS : {
+      FLOWCHARTS: {
         SWITCH_ON: {
           first: {
             func: this.powerOn,
@@ -75,6 +75,40 @@ export default {
             func: this.setCanBuyNow,
             onSuccess: ""
           }
+        },
+        INSERT_COIN: {
+          first: {
+            func: this.acceptCoin,
+            onSuccess: "addInputCoin",
+            onFailure: ""
+          },
+          addInputCoin: {
+            func: this.addInputCoin,
+            onSuccess: "setInputAmount"
+          },
+          setInputAmount: {
+            func: this.setInputAmount,
+            onSuccess: "setCanBuyNow"
+          },
+          setCanBuyNow: {
+            func: this.setCanBuyNow,
+            onSuccess: ""
+          }
+        },
+        RETURN_COINS: {
+          first: {
+            func: this.returnInputCoin,
+            onSuccess: "setCanBuyNow",
+            onFailure: "setInputAmount"
+          },
+          setInputAmount: {
+            func: this.setInputAmount,
+            onSuccess: "first"
+          },
+          setCanBuyNow: {
+            func: this.setCanBuyNow,
+            onSuccess: ""
+          }
         }
       }
     };
@@ -98,22 +132,10 @@ export default {
       let isContinue = this.startFlow(eventId,FLOWCHART_NAME_JP.INSERT_COIN + ": " + coin);
       
       if(isContinue){
-        // １．電源スイッチ確認 new
-        
-        
-        // ２．投入物体受付 new
-        
-        // ３．投入済硬貨の更新
-        // ３－１．投入済硬貨の追加 new
-        // ３－２．投入金額を表示 既存
-        
-        
-        // ４．購入可能表示更新 new
-        
-        // ３’．投入物体返却 new
-        
+        isContinue = this.proceedFlow(eventId, FLOWCHART_NAME_EN.INSERT_COIN, coin);
+      } else {
+        this.endFlow(eventId,FLOWCHART_NAME_JP.INSERT_COIN + ": " + coin);
       }
-      this.endFlow(eventId,FLOWCHART_NAME_JP.INSERT_COIN + ": " + coin);
     },
     purchaseA() {
       let eventId = ++this.eventId;
@@ -137,10 +159,11 @@ export default {
       let eventId = ++this.eventId;
       let isContinue = this.startFlow(eventId, FLOWCHART_NAME_JP.RETURN_COINS);
       
-      if(isContinue){
-        this.$refs.logs.warn("[" + eventId + "]" + "本機能は未実装です。");
+      if(isContinue) {
+        isContinue = this.proceedFlow(eventId, FLOWCHART_NAME_EN.RETURN_COINS);
+      } else {
+        this.endFlow(eventId,FLOWCHART_NAME_JP.RETURN_COINS);
       }
-      this.endFlow(eventId, FLOWCHART_NAME_JP.RETURN_COINS);
     },
     startFlow(eventId, flow_name) {
       this.$refs.logs.info("[" + eventId + "]" + flow_name + " 開始");
@@ -151,13 +174,13 @@ export default {
       this.loading = eventId;
       return true;
     },
-    async proceedFlow(eventId, flow_name) {
+    async proceedFlow(eventId, flow_name, param) {
       let flow = this.FLOWCHARTS[flow_name];
       let nextFunction = flow["first"];
       
       while(nextFunction) {
         await this.sleep();
-        if(nextFunction["func"](eventId)) {
+        if(nextFunction["func"](eventId, param)) {
           nextFunction = flow[nextFunction["onSuccess"]];
         } else {
           nextFunction = flow[nextFunction["onFailure"]];
@@ -180,10 +203,31 @@ export default {
         return false;
       }
     },
+    acceptCoin(eventId, coin) {
+      if(this.$refs.exterior.isPowerOn()) {
+        if(this.$refs.interior.canAcceptCoin(coin)) {
+          this.$refs.logs.info("[" + eventId + "]" + "有効な硬貨です。");
+          return true;
+        }
+        this.$refs.logs.warn("[" + eventId + "]" + "無効な硬貨です。");
+      } else {
+        this.$refs.logs.warn("[" + eventId + "]" + "電源が入っていません。");
+      }
+      // 硬貨返却
+      this.$refs.exterior.returnCoin(coin);
+      this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。");
+      return false;
+    },
     initializeInputCoins(eventId) {
       // 投入済硬貨のスキャン
       this.$refs.interior.initializeInputCoins();
       this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨を初期化しました。");
+      
+      return true;
+    },
+    addInputCoin(eventId, coin) {
+      this.$refs.interior.addInputCoin(coin);
+      this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨を更新しました。");
       
       return true;
     },
@@ -232,9 +276,20 @@ export default {
       this.$refs.logs.info("[" + eventId + "]" + "購入可能ランプを更新しました。");
       
       return true;
+    },
+    returnInputCoin(eventId) {
+      // 投入済硬貨を返却
+      let coin = this.$refs.interior.returnInputCoin();
+      if(coin) {
+        this.$refs.exterior.returnCoin(coin);
+        this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。");
+        return false;
+      } else {
+        this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨がありません。");
+        return true;
+      }
     }
   },
-
 }
 </script>
 

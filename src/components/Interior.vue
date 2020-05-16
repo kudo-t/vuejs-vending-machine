@@ -146,6 +146,22 @@ export default {
         }
       }
       return false;
+    },
+    canAcceptCoin(coin) {
+      return COIN_TYPES.includes(coin);
+    },
+    addInputCoin(coin) {
+      this.inputCoins[coin] += 1;
+    },
+    returnInputCoin() {
+      // inputCoinsから、一番大きな硬貨を返却します。
+      for(let c in COIN_TYPES) {
+        if(this.inputCoins[COIN_TYPES[c]] > 0) {
+          this.inputCoins[COIN_TYPES[c]] -= 1;
+          return COIN_TYPES[c];
+        }
+      }
+      return "";
     }
   }
 }

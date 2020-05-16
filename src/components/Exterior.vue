@@ -83,7 +83,7 @@ export default {
     },
     // 購入可能ランプ
     getCanBuyLamp(canBuyNow){
-      if(canBuyNow === undefined) {
+      if(canBuyNow === undefined || !this.isPowerOn()) {
         return "--";
       } else {
         return canBuyNow ? "ON" : "OFF";
@@ -91,11 +91,14 @@ export default {
     },
     // 品切れランプ
     getOutOfStockLamp(outOfStock) {
-      if(outOfStock === undefined) {
+      if(outOfStock === undefined || !this.isPowerOn()) {
         return "--";
       } else {
         return outOfStock ? "ON" : "OFF";
       }
+    },
+    returnCoin(coin) {
+      this.change.push(coin);
     }
   }
 }

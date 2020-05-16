@@ -32,12 +32,10 @@ import {PRODUCT_TYPES} from '../constants/config.js'
 
 export default {
   name: 'Actions',
-  props: {
-    coin: {type:String, default:"500"}
-  },
   data() {
     return {
-      PRODUCT_TYPES: PRODUCT_TYPES
+      PRODUCT_TYPES: PRODUCT_TYPES,
+      coin: "500"
     };
   },
   methods: {
