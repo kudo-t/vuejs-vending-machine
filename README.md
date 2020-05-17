@@ -1,6 +1,7 @@
 # vuejs-vending-machine
 
-## Vending Machine
+## demo
+https://kudo-t.github.io/vuejs-vending-machine/
 
 ## Project setup
 ```
