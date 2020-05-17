@@ -12,6 +12,9 @@
         v-on:insert-coin="insertCoin"
         v-on:purchase="purchase"
         v-on:return-coins="returnCoins"
+      /><br><br><br>
+      <Settings 
+        v-on:set-wait="setWait"
       />
     </div>
     <div class="grid-item">
@@ -24,6 +27,7 @@
 import Exterior from './components/Exterior.vue'
 import Interior from './components/Interior.vue'
 import Actions from './components/Actions.vue'
+import Settings from './components/Settings.vue'
 import Logs from './components/Logs.vue'
 import {FLOWCHART_NAME_JP, FLOWCHART_NAME_EN} from './constants/messages.js'
 
@@ -33,12 +37,14 @@ export default {
     Exterior,
     Interior,
     Actions,
+    Settings,
     Logs
   },
   data(){
     return {
       eventId: 0,
       loading: -1,
+      wait: 1000,
       FLOWCHARTS: {
         SWITCH_ON: {
           first: {
@@ -142,7 +148,10 @@ export default {
   },
   methods: {
     sleep() {
-      return new Promise(resolve => setTimeout(resolve, 1000));
+      return new Promise(resolve => setTimeout(resolve, this.wait));
+    },
+    setWait(wait) {
+      this.wait = wait;
     },
     switchOn() {
       let eventId = ++this.eventId;
@@ -225,16 +234,16 @@ export default {
     acceptCoin(eventId, coin) {
       if(this.$refs.exterior.isPowerOn()) {
         if(this.$refs.interior.canAcceptCoin(coin)) {
-          this.$refs.logs.info("[" + eventId + "]" + "有効な硬貨です。");
+          this.$refs.logs.info("[" + eventId + "]" + "有効な硬貨です。: " + coin);
           return true;
         }
-        this.$refs.logs.warn("[" + eventId + "]" + "無効な硬貨です。");
+        this.$refs.logs.warn("[" + eventId + "]" + "無効な硬貨です。: " + coin);
       } else {
         this.$refs.logs.warn("[" + eventId + "]" + "電源が入っていません。");
       }
       // 硬貨返却
       this.$refs.exterior.returnCoin(coin);
-      this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。");
+      this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。: " + coin);
       return false;
     },
     initializeInputCoins(eventId) {
@@ -254,7 +263,7 @@ export default {
       // 投入金額を表示
       let amount = this.$refs.interior.getInputAmount();
       this.$refs.exterior.setInputAmount(amount);
-      this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。");
+      this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。: " + amount);
       
       return true;
     },
@@ -301,7 +310,7 @@ export default {
       let coin = this.$refs.interior.returnInputCoin();
       if(coin) {
         this.$refs.exterior.returnCoin(coin);
-        this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。");
+        this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。: " + coin);
         return false;
       } else {
         this.$refs.logs.info("[" + eventId + "]" + "投入済硬貨がありません。");
@@ -324,7 +333,7 @@ export default {
       // 投入金額に、商品金額を引いた値をセット
       let amount = this.$refs.interior.getPurchasedInputAmount(product);
       this.$refs.exterior.setInputAmount(amount);
-      this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。");
+      this.$refs.logs.info("[" + eventId + "]" + "投入金額の表示を更新しました。: " + amount);
       
       // 投入済硬貨を硬貨在庫へ格納
       this.$refs.interior.storeInputCoins();
@@ -333,7 +342,7 @@ export default {
       // 商品を排出
       this.$refs.interior.serveProduct(product);
       this.$refs.exterior.serveProduct(product);
-      this.$refs.logs.info("[" + eventId + "]" + "商品を排出しました。");
+      this.$refs.logs.info("[" + eventId + "]" + "商品を排出しました。: " + product);
       
       return true;
     },
@@ -346,7 +355,7 @@ export default {
         
         amount = amount - parseInt(coin, 10);
         this.$refs.exterior.setInputAmount(amount);
-        this.$refs.logs.info("[" + eventId + "]" + "釣り銭を排出しました。");
+        this.$refs.logs.info("[" + eventId + "]" + "釣り銭を排出しました。: " + coin);
         
         if(amount === 0) {
           this.$refs.logs.info("[" + eventId + "]" + "釣り銭はすべて排出済です。");
