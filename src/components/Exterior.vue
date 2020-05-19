@@ -26,7 +26,7 @@
     <h3>投入金額</h3>
     {{ inputAmountYen }}
     <h3>釣り銭切れランプ</h3>
-    {{ outOfChangeLamp }}
+    100円：{{ outOfChangeLamp("100") }}<br>10&nbsp;円&nbsp;：{{ outOfChangeLamp("10") }}
     <h3>商品排出口</h3>
     {{ output.length ? output : "なし"}}
     <h3>釣り銭排出口</h3>
@@ -45,7 +45,7 @@ export default {
       PRODUCT_PRICE: PRODUCT_PRICE,
       power: "OFF",
       inputAmount:"",
-      outOfChangeLamp:"--",
+      outOfChange:{},
       canBuyNow: {},
       outOfStock: {},
       output: [],
@@ -55,7 +55,12 @@ export default {
   computed: {
     inputAmountYen: function() {
       return this.inputAmount ? (this.inputAmount + "円") : "--";
-    }
+    },
+    outOfChangeLamp: function() {
+      return function(coin) {
+        return this.outOfChange[coin] ? this.outOfChange[coin] : "--";
+      }
+    },
   },
   methods: {
     powerOn() {
@@ -74,8 +79,12 @@ export default {
     setInputAmount(inputAmount) {
       this.inputAmount = inputAmount.toString();
     },
-    setOutOfChangeLamp(isEnoughChange) {
-      this.outOfChangeLamp = isEnoughChange ? "OFF": "ON";
+    setOutOfChange(hasEnoughChange) {
+      let obj = {}
+      for(let coin in hasEnoughChange) {
+        obj[coin] = hasEnoughChange[coin] ? "OFF": "ON";
+      }
+      this.outOfChange = Object.assign({}, obj);
     },
     setCanBuyNow(canBuyNow) {
       this.canBuyNow = canBuyNow;

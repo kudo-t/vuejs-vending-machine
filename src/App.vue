@@ -292,8 +292,8 @@ export default {
     },
     setOutOfChangeLamp(eventId) {
       // 釣り銭切れランプ表示
-      let isEnoughChange = this.$refs.interior.isEnoughChange();
-      this.$refs.exterior.setOutOfChangeLamp(isEnoughChange);
+      let hasEnoughChange = this.$refs.interior.getHasEnoughChange();
+      this.$refs.exterior.setOutOfChange(hasEnoughChange);
       this.$refs.logs.info("[" + eventId + "]" + "釣り銭切れランプの表示を更新しました。");
       
       return true;

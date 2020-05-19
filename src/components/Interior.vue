@@ -74,7 +74,7 @@ export default {
       {
         "500": 0,
         "100": 9,
-        "50": 9,
+        "50": 1,
         "10": 9
       },
       stockProducts:
@@ -129,7 +129,7 @@ export default {
       }
       return outOfStock;
     },
-    isEnoughChange() {
+    getHasEnoughChange() {
       let coins = this.stockCoins;
       
       // 100円以上の硬貨で400円が作れ、
@@ -137,7 +137,7 @@ export default {
       let isEnoughHundreds = coins["100"] >= 4;
       let isEnoughTens = coins["10"] >= 9 || (coins["50"] >= 1 && coins["10"] >= 4);
       
-      return isEnoughHundreds && isEnoughTens;
+      return {"100": isEnoughHundreds, "10": isEnoughTens};
     },
     hasChangeFor(changeAmount) {
       for(let c in COIN_TYPES) {
