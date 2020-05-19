@@ -85,7 +85,11 @@ export default {
           first: {
             func: this.acceptCoin,
             onSuccess: "addInputCoin",
-            onFailure: ""
+            onFailure: "returnCoin"
+          },
+          returnCoin: {
+            func: this.returnCoin,
+            onSuccess: ""
           },
           addInputCoin: {
             func: this.addInputCoin,
@@ -232,19 +236,31 @@ export default {
       }
     },
     acceptCoin(eventId, coin) {
-      if(this.$refs.exterior.isPowerOn()) {
-        if(this.$refs.interior.canAcceptCoin(coin)) {
-          this.$refs.logs.info("[" + eventId + "]" + "有効な硬貨です。: " + coin);
-          return true;
-        }
-        this.$refs.logs.warn("[" + eventId + "]" + "無効な硬貨です。: " + coin);
-      } else {
+      if(!this.$refs.exterior.isPowerOn()) {
         this.$refs.logs.warn("[" + eventId + "]" + "電源が入っていません。");
+        return false;
       }
+      
+      if(!this.$refs.interior.canAcceptCoin(coin)) {
+        this.$refs.logs.warn("[" + eventId + "]" + "無効な硬貨です。: " + coin);
+        return false;
+      }
+      
+      if(!this.$refs.interior.canAddInputCoin(coin)) {
+        this.$refs.logs.warn("[" + eventId + "]" + "既に十分な金額が投入されています。");
+        return false;
+      }
+      
+      this.$refs.logs.info("[" + eventId + "]" + "硬貨を受け付けました。: " + coin);
+      return true;
+      
+    },
+    returnCoin(eventId, coin) {
       // 硬貨返却
       this.$refs.exterior.returnCoin(coin);
       this.$refs.logs.info("[" + eventId + "]" + "硬貨を返却しました。: " + coin);
-      return false;
+      
+      return true;
     },
     initializeInputCoins(eventId) {
       // 投入済硬貨のスキャン

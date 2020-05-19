@@ -161,6 +161,9 @@ export default {
     canAcceptCoin(coin) {
       return COIN_TYPES.includes(coin);
     },
+    canAddInputCoin(coin) {
+      return (this.getInputAmount() + parseInt(coin, 10)) < 10000;
+    },
     addInputCoin(coin) {
       this.inputCoins[coin] += 1;
     },
